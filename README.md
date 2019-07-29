@@ -21,3 +21,6 @@ BTW2: 如果遇到connection closed by end server这类的错误换一下header�
 BTW3: 真的不要看原版...写的一团糟糕还需要手动再来soup.....年久失修。想要用或者参考直接用新版就好！！(newmain.py)
 
 自己写个小东西，就酱。不提供技术支持。我用着爽就行。
+
+对了，如果还想要一条龙把录取结果都查了的这里有个小工具
+https://github.com/BYTEGOING/2019HLJGaokaoAdmissionQuery
