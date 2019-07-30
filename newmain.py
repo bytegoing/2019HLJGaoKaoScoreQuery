@@ -90,13 +90,15 @@ finalResultExcel = 'D:/finalResult.xlsx'
 sheet = xlrd.open_workbook(studentListExcel)
 table = sheet.sheets()[0]  # 打开Sheet1
 nrows = table.nrows  # 查询总行数
-allStudents = nrows - 1
+allStudents = nrows
 
 # 第一名学生插入List中为第0个
-studentList = [[0, table.col_values(0)[1], table.col_values(1)[1], table.col_values(1)[1][-6:], table.col_values(2)[1]]]
+print("正在读取第1个学生，姓名:"+table.col_values(0)[0]+" 身份证号:"+table.col_values(1)[0]+" 准考证号:"+table.col_values(2)[0])
+studentList = [[0, table.col_values(0)[0], table.col_values(1)[0], table.col_values(1)[0][-6:], table.col_values(2)[0]]]
 # 从第二名(List中第1个)开始循环读取到最后一名学生插入List中
-i = 2
-while i < nrows - 1:
+i = 1
+while i < allStudents:
+    print("正在读取第"+str(i+1)+"个学生，姓名:"+table.col_values(0)[i]+" 身份证号:"+table.col_values(1)[i]+" 准考证号:"+table.col_values(2)[i])
     studentList.append([0, table.col_values(0)[i], table.col_values(1)[i], table.col_values(1)[i][-6:], table.col_values(2)[i]])
     i = i + 1
 
