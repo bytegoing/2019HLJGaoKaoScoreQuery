@@ -53,6 +53,32 @@ def doNothing():
         return
 # 验证码窗口结束
 
+# 爬取页面代码
+def getPage(resultReq):
+    try:
+        finalResultRes = urllib.request.urlopen(resultReq).read().decode('utf-8')  # 发送请求并保存页面
+    except Exception as e:
+        print("遇到HTTP错误:" + str(e))
+        print("等待一秒")
+        time.sleep(1)  # 等待1秒
+    else:
+        # 开始检查返回页面正确性
+        if (str(finalResultRes).find('请重新核实您的信息') != -1):
+            # 信息不正确
+            print("请重新核实您的信息!")
+            finalResultRes = ""
+        else:
+            # 信息正确，开始检查验证码
+            if (str(finalResultRes).find('验证码错误') == -1):
+                # 验证码正确
+                print("检查通过!")
+            else:
+                # 验证码错误
+                print("验证码错误!")
+                finalResultRes = "ERROR"
+    return finalResultRes
+# 爬取页面代码结束
+
 # studentListExcel(studentList.xlsx)为学生信息表.该表结构如下：（第一行就应该开始放学生信息，不要有题头）
 # |姓名|身份证号|准考证号|
 studentListExcel = 'D:/studentList.xlsx'
@@ -106,61 +132,40 @@ while j < allStudents:
         "Cache-Control": "no-cache"
     }
     print("本次使用url: " + mainUrl)
-    # 开始爬取验证码
-    reqCode = urllib.request.Request(url=captchaUrl, headers=headers)
-    cjar = http.cookiejar.CookieJar()
-    cookie = urllib.request.HTTPCookieProcessor(cjar)
-    opener = urllib.request.build_opener(cookie)
-    urllib.request.install_opener(opener)
-    print("正在获取验证码...地址: " + captchaUrl)
-    getCodeReady = False
-    while (not getCodeReady):
-        try:
-            tobeCheckedCodeIMG = urllib.request.urlopen(reqCode).read()
-        except Exception as e:
-            print("遇到HTTP错误:" + str(e))
-            print("暂停一秒后继续重试")
-            time.sleep(1)
-        else:
-            getCodeReady = True
-    GetCode()  # 弹出输入验证码窗口
-    print("输入了验证码: "+nowCode)
-    # 开始爬取成绩页面
-    data = {
-        'xm': xm,
-        'ksh': ksh,
-        'sfzh': sfz,
-        'authCode': nowCode,
-    }  # POST数据体
-    getResultsReady = False
-    # 构建请求体
-    resultReq = urllib.request.Request(url=mainUrl, data=urllib.parse.urlencode(data).encode('utf-8'), headers=headers)
-    while (not getResultsReady):
-        try:
-            finalResultRes = urllib.request.urlopen(resultReq).read().decode('utf-8')  # 发送请求并保存页面
-        except Exception as e:
-            print("遇到HTTP错误:" + str(e))
-            print("等待一秒")
-            time.sleep(1)  # 等待1秒
-        else:
-            # 开始检查返回页面正确性
-            if(str(finalResultRes).find('请重新核实您的信息') != -1):
-                # 信息不正确
-                print("请重新核实您的信息!")
-                finalResultRes = ""
-                getResultsReady = True
+    # 开始请求
+    resultPage = "ERROR"
+    while (resultPage == "ERROR"):
+        # 开始爬取验证码
+        reqCode = urllib.request.Request(url=captchaUrl, headers=headers)
+        cjar = http.cookiejar.CookieJar()
+        cookie = urllib.request.HTTPCookieProcessor(cjar)
+        opener = urllib.request.build_opener(cookie)
+        urllib.request.install_opener(opener)
+        print("正在获取验证码...地址: " + captchaUrl)
+        getCodeReady = False
+        while (not getCodeReady):
+            try:
+                tobeCheckedCodeIMG = urllib.request.urlopen(reqCode).read()
+                GetCode()  # 弹出输入验证码窗口
+            except Exception as e:
+                print("遇到HTTP错误:" + str(e))
+                print("暂停一秒后继续重试")
+                time.sleep(1)
             else:
-                # 信息正确，开始检查验证码
-                if(str(finalResultRes).find('验证码错误') == -1):
-                    # 验证码正确
-                    print("检查通过!")
-                    getResultsReady = True
-                else:
-                    # 验证码错误
-                    print("验证码错误!")
-                    getResultsReady = False
+                getCodeReady = True
+        print("输入了验证码: " + nowCode)
+        data = {
+            'xm': xm,
+            'ksh': ksh,
+            'sfzh': sfz,
+            'authCode': nowCode,
+        }  # POST数据体
+        # 构建请求
+        resultReq = urllib.request.Request(url=mainUrl, data=urllib.parse.urlencode(data).encode('utf-8'),
+                                           headers=headers)
+        resultPage = str(getPage(resultReq))  # 返回结果
     # 判断是否信息不正确
-    if(str(finalResultRes) == ""):
+    if (resultPage == ""):
         # 信息确实不正确，标记上
         rawList = [ksh, xm]
         sheet.append(rawList)  # 追加一行
@@ -170,7 +175,7 @@ while j < allStudents:
         # 信息正确，洗数据吧。
         print("正在提取成绩信息...")
         # 数据放锅里洗出来再打碎
-        rawList = BeautifulSoup(str(finalResultRes), features='html.parser').select_one('tr[bgcolor="#F5F5F5"]').get_text().split()
+        rawList = BeautifulSoup(str(resultPage), features='html.parser').select_one('tr[bgcolor="#F5F5F5"]').get_text().split()
         print(rawList)  # 输出一下
         sheet.append(rawList)  # 追加一行
         print("正在保存...")
