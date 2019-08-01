@@ -14,7 +14,7 @@
 2. 下载newmain.py/newwechatmain.py
 3. 修改newmain.py/newwechatmain.py中 ```studentListExcel``` 与 ```finalResultExcel``` 变量的内容，使其指向的文件有权限读写。
 4. 按照程序注释中的说明，创建```StudentList.xlsx```文件。
-5. 运行程序，手动输入验证码。
+5. 运行程序.
 6. 查看finalResultExcel所指向的文件，进行统计。（可能需要进行去小数点操作后才可正常统计。）
 
 BTW: 编程真的可以减少劳动量hhhh
